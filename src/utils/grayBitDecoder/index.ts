@@ -1,0 +1,1 @@
+export { grayBitDecoder } from './grayBitDecoder';

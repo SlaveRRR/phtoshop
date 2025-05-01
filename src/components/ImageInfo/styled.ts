@@ -2,6 +2,7 @@ import { Typography } from 'antd';
 import styled from 'styled-components';
 
 export const StatusBar = styled('div')`
+margin-top:12px;
   padding: 12px 24px;
   background: #f0f2f5;
   border-top: 1px solid #e8e8e8;

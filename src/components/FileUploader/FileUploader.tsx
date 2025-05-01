@@ -4,8 +4,9 @@ import { type UploadProps, message, Upload } from 'antd';
 import { PIXEL_DATA_OFFSET } from './constants';
 import { Card, Text } from './styled';
 import { FileUploaderProps } from './types';
+import { ImageInfo } from '@components/ImageInfo';
 
-export const FileUploader = ({ setMetadata, canvasRef }: FileUploaderProps) => {
+export const FileUploader = ({ setMetadata, canvasRef,metadata }: FileUploaderProps) => {
   const loadStandardImage = (file: File) => {
     const reader = new FileReader();
 
@@ -116,6 +117,7 @@ export const FileUploader = ({ setMetadata, canvasRef }: FileUploaderProps) => {
         <Text>Click or drag an image to this area to upload</Text>
         <Text>Supports PNG, JPG, and GrayBit-7 formats</Text>
       </Upload.Dragger>
+           <ImageInfo metadata={metadata} />
     </Card>
   );
 };

@@ -8,7 +8,7 @@ export const Canvas = forwardRef<HTMLCanvasElement, CanvasProps>(({ metadata }, 
 
   return (
     <>
-      {metadata && <Controls scale={scale} setScale={setScale} />}
+      {!!Object.keys(metadata).length && <Controls scale={scale} setScale={setScale} />}
       <CanvasContainer>
         <CanvasComponent scale={scale} ref={ref} />
       </CanvasContainer>

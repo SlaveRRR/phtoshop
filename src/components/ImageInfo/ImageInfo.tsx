@@ -6,7 +6,7 @@ import { ImageInfoProps } from './types';
 export const ImageInfo: FC<ImageInfoProps> = ({ metadata }) => {
   return (
     <StatusBar>
-      {metadata ? (
+      {!!Object.keys(metadata).length ? (
         <Space wrap>
           <Text>Width: {metadata.width}px</Text>
           <Text>Height: {metadata.height}px</Text>

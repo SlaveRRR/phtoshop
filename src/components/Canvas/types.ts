@@ -11,5 +11,5 @@ interface ImageMetadata {
 }
 
 export interface CanvasProps {
-  metadata: ImageMetadata | null;
+  metadata: ImageMetadata;
 }

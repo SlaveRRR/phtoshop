@@ -18,12 +18,18 @@ export const StyledHeader = styled(Header)`
 export const StyledContent = styled(Content)`
   padding: 24px;
   display: flex;
-  width:100%;
+  width: 100%;
   flex-direction: row;
-  justify-content:space-between;
+  justify-content: space-between;
   gap: 24px;
 `;
 
-export const StyledPreviewCard = styled(Card)`
+export const StyledCard = styled(Card)`
+  height: 100%;
   width: 100%;
+
+  .ant-card-body {
+    height: 100%;
+    padding: 0;
+  }
 `;

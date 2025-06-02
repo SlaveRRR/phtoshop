@@ -1,0 +1,1 @@
+export { loadStandardImage } from './loadStandardImage';

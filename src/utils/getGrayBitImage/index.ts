@@ -1,0 +1,1 @@
+export { getGrayBitImage } from './getGrayBitImage';

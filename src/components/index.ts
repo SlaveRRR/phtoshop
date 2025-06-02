@@ -1,3 +1,3 @@
 export * from './Canvas';
-export * from './FileUploader';
+export * from './Header';
 export * from './ImageInfo';

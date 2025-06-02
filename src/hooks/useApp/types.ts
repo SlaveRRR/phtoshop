@@ -1,8 +1,10 @@
 import { ImageMetadata } from '@types';
+import { UploadProps } from 'antd';
 import { Dispatch, RefObject, SetStateAction } from 'react';
 
-export interface FileUploaderProps {
+export interface AppContext {
+  onFileSelect: UploadProps['customRequest'];
+  metadata: ImageMetadata;
   setMetadata: Dispatch<SetStateAction<ImageMetadata>>;
   canvasRef: RefObject<HTMLCanvasElement | null>;
-  metadata:ImageMetadata;
 }

@@ -14,8 +14,9 @@ export const CanvasContainer = styled(Card)`
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  overflow: auto;
   background: #f5f5f5;
+  position: relative;
 
   .ant-card-body {
     width: 100%;
@@ -60,4 +61,60 @@ export const ImageInfo = styled.div`
   color: white;
   font-size: 14px;
   z-index: 1;
+`;
+
+export const ToolsPanel = styled.div`
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+`;
+
+export const ColorPanel = styled(Card)`
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  width: 300px;
+
+  .ant-card-head-title {
+    font-size: 14px;
+  }
+`;
+
+export const ColorSwatch = styled.div<{ color: string }>`
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  background-color: ${(props) => props.color};
+  border: 1px solid rgba(0, 0, 0, 0.1);
+`;
+
+export const ColorInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+export const ColorRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+`;
+
+export const ColorLabel = styled.span`
+  min-width: 60px;
+  color: rgba(0, 0, 0, 0.45);
+`;
+
+export const ColorValue = styled.span`
+  font-family: monospace;
+  color: rgba(0, 0, 0, 0.85);
 `;

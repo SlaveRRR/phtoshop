@@ -1,4 +1,4 @@
-import { Color, Point } from "@components/ImageEditor/types";
+import { Color, Point } from '@components/ColorInfo/types';
 
 // Преобразование RGB в XYZ
 export function rgbToXyz(r: number, g: number, b: number): { x: number; y: number; z: number } {
@@ -14,8 +14,8 @@ export function rgbToXyz(r: number, g: number, b: number): { x: number; y: numbe
 
   // Матричное преобразование
   const x = (rr * 0.4124564 + gg * 0.3575761 + bb * 0.1804375) * 100;
-  const y = (rr * 0.2126729 + gg * 0.7151522 + bb * 0.0721750) * 100;
-  const z = (rr * 0.0193339 + gg * 0.1191920 + bb * 0.9503041) * 100;
+  const y = (rr * 0.2126729 + gg * 0.7151522 + bb * 0.072175) * 100;
+  const z = (rr * 0.0193339 + gg * 0.119192 + bb * 0.9503041) * 100;
 
   return { x, y, z };
 }
@@ -27,11 +27,11 @@ export function xyzToLab(x: number, y: number, z: number): { l: number; a: numbe
   let yy = y / 100;
   let zz = z / 108.883;
 
-  xx = xx > 0.008856 ? Math.pow(xx, 1/3) : (7.787 * xx) + 16/116;
-  yy = yy > 0.008856 ? Math.pow(yy, 1/3) : (7.787 * yy) + 16/116;
-  zz = zz > 0.008856 ? Math.pow(zz, 1/3) : (7.787 * zz) + 16/116;
+  xx = xx > 0.008856 ? Math.pow(xx, 1 / 3) : 7.787 * xx + 16 / 116;
+  yy = yy > 0.008856 ? Math.pow(yy, 1 / 3) : 7.787 * yy + 16 / 116;
+  zz = zz > 0.008856 ? Math.pow(zz, 1 / 3) : 7.787 * zz + 16 / 116;
 
-  const l = (116 * yy) - 16;
+  const l = 116 * yy - 16;
   const a = 500 * (xx - yy);
   const b = 200 * (yy - zz);
 
@@ -42,8 +42,8 @@ export function xyzToLab(x: number, y: number, z: number): { l: number; a: numbe
 export function labToOklch(l: number, a: number, b: number): { l: number; c: number; h: number } {
   // Преобразование Lab в LCH
   const c = Math.sqrt(a * a + b * b);
-  let h = Math.atan2(b, a) * 180 / Math.PI;
-  
+  let h = (Math.atan2(b, a) * 180) / Math.PI;
+
   // Нормализация угла
   if (h < 0) {
     h += 360;
@@ -53,21 +53,39 @@ export function labToOklch(l: number, a: number, b: number): { l: number; c: num
   return {
     l: l / 100, // Нормализация L до диапазона 0-1
     c: c / 100, // Нормализация C до примерного диапазона 0-0.4
-    h
+    h,
   };
+}
+
+export interface CanvasSize {
+  width: number;
+  height: number;
+}
+
+export interface Position {
+  left: number;
+  top: number;
 }
 
 // Получение цвета из точки на canvas
 export function getColorFromPoint(
-  ctx: CanvasRenderingContext2D,
+  canvasSize: CanvasSize,
+  position: Position,
+  imageData: ImageData,
   point: Point,
-  scale: number
+  scale: number,
 ): Color | null {
+  const { height, width } = canvasSize;
+  const { left, top } = position;
   const scaledX = Math.round(point.x / scale);
   const scaledY = Math.round(point.y / scale);
 
+  const sampleX = Math.floor((point.x - left) / scaledX);
+  const sampleY = Math.floor((point.y - top) / scaledY);
+
   try {
-    const pixel = ctx.getImageData(scaledX, scaledY, 1, 1).data;
+    const pixel = imageData.data.slice((sampleY * width + sampleX) * 4, (sampleY * height + sampleX) * 4 + 4);
+
     const rgb = { r: pixel[0], g: pixel[1], b: pixel[2] };
     const xyz = rgbToXyz(rgb.r, rgb.g, rgb.b);
     const lab = xyzToLab(xyz.x, xyz.y, xyz.z);
@@ -78,7 +96,7 @@ export function getColorFromPoint(
       xyz,
       lab,
       oklch,
-      position: { x: scaledX, y: scaledY }
+      position: { x: scaledX, y: scaledY },
     };
   } catch {
     return null;
@@ -107,4 +125,4 @@ export function gb7ToRgb(value: number): number {
 // Преобразование RGB (0-255) в GB7 (0-127)
 export function rgbToGb7(value: number): number {
   return Math.round((value / 255) * 127);
-} 
+}

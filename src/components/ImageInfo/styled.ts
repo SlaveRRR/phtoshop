@@ -8,6 +8,10 @@ export const StatusBar = styled('div')`
   color: white;
   font-size: 14px;
   z-index: 1;
+  position: absolute;
+  position: absolute;
+  bottom: 0;
+  left: 0;
 `;
 
 export const { Text } = Typography;

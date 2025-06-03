@@ -4,8 +4,9 @@ import { FC, PropsWithChildren, useCallback, useContext, useMemo, useRef, useSta
 import { ImageMetadata } from '@types';
 import { bilinearInterpolation, decoderGB7, getFileType, hasAlphaChannel, nearestNeighborInterpolation } from '@utils';
 
+import { useTools } from '@hooks';
 import { appContext } from './context';
-import { ResizeParams } from './types';
+import { PipetteColors, ResizeParams } from './types';
 
 const { Provider } = appContext;
 
@@ -19,6 +20,10 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
   const [scale, setScale] = useState(100);
 
   const [isOpenModal, setIsOpenModal] = useState(false);
+
+  const [pipetteColors, setPipetteColors] = useState<PipetteColors>({} as PipetteColors);
+
+  const { activeTool, setActiveTool } = useTools();
 
   const onFileSelect: UploadProps['customRequest'] = useCallback(({ file }) => {
     if (!(file instanceof File) || !file) {
@@ -161,6 +166,10 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
       closeModal,
       handleResize,
       isOpenModal,
+      activeTool,
+      setActiveTool,
+      setPipetteColors,
+      pipetteColors,
     }),
     [
       onFileSelect,
@@ -175,6 +184,10 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
       setScale,
       autoScaled,
       setAutoScaled,
+      activeTool,
+      setActiveTool,
+      setPipetteColors,
+      pipetteColors,
     ],
   );
 

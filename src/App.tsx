@@ -1,4 +1,4 @@
-import { Canvas, Header } from '@components';
+import { Canvas, Header, Info } from '@components';
 import { AppProvider } from '@hooks';
 import { FC } from 'react';
 
@@ -9,14 +9,8 @@ export const App: FC = () => {
     <AppProvider>
       <StyledLayout>
         <Header />
-
         <Canvas />
-        {/* <ImageEditor 
-              scale={scale} 
-              onScaleChange={handleScaleChange}
-              isResizeModalOpen={isResizeModalOpen}
-              onResizeModalClose={() => setIsResizeModalOpen(false)}
-            /> */}
+        <Info />
       </StyledLayout>
     </AppProvider>
   );

@@ -19,3 +19,13 @@ export const Controls = styled.div`
   align-items: center;
   gap: 16px;
 `;
+
+export const ToolsPanel = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+`;

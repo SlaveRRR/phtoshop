@@ -5,7 +5,9 @@ const { Header, Content } = Layout;
 export const { Title } = Typography;
 
 export const StyledLayout = styled(Layout)`
+  position: relative;
   align-items: center;
+  height: 100vh;
 `;
 
 export const StyledHeader = styled(Header)`

@@ -1,19 +1,21 @@
-import { ImageInfo } from '@components/ImageInfo';
 import { useApp } from '@hooks';
-import { computeRenderParams, drawImage } from '@utils';
-import { useCallback, useEffect, useRef } from 'react';
+import { computeRenderParams, drawImage, getColorFromPoint } from '@utils';
+import { MouseEvent, PointerEvent, useCallback, useEffect, useRef } from 'react';
 
 import { ResizeModal } from '@components/ResizeModal';
-import { CanvasComponent, CanvasContainer } from './styled';
+import { useDraggable } from '@hooks';
+import { CanvasComponent, CanvasContainer, ViewPort } from './styled';
 
 export const Canvas = () => {
-  const { metadata, canvasRef, scale, autoScaled, setScale, setAutoScaled } = useApp();
+  const { metadata, canvasRef, scale, autoScaled, setScale, setAutoScaled, setPipetteColors, activeTool } = useApp();
 
   const { imageData } = metadata;
 
   const isImageReady = !!Object.keys(metadata).length;
 
   const offsetRef = useRef({ x: 0, y: 0 });
+
+  const { containerRef, onPointerDown, onPointerMove, onPointerUp } = useDraggable();
 
   const updateCanvas = useCallback(async () => {
     if (!canvasRef.current) return;
@@ -69,6 +71,47 @@ export const Canvas = () => {
     );
   }, [autoScaled, scale, setScale, setAutoScaled, imageData]);
 
+  const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    if (activeTool === 'hand') {
+      onPointerDown(e);
+    }
+  };
+
+  const handleMouseDown = (e: MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    e.stopPropagation();
+    const { clientX, clientY } = e;
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleFactor = scale / 100;
+
+    const color = getColorFromPoint(
+      { width: canvas.width, height: canvas.height },
+      { left: rect.left, top: rect.top },
+      imageData,
+      {
+        x: clientX,
+        y: clientY,
+      },
+      scaleFactor,
+    );
+    if (color) {
+      if (e.altKey || e.ctrlKey || e.shiftKey) {
+        setPipetteColors((prevState) => ({
+          ...prevState,
+          color2: color,
+        }));
+      } else {
+        setPipetteColors((prevState) => ({
+          ...prevState,
+          color1: color,
+        }));
+      }
+    }
+  };
+
   useEffect(() => {
     if (isImageReady) {
       updateCanvas();
@@ -78,11 +121,16 @@ export const Canvas = () => {
   return (
     <>
       {isImageReady && <ResizeModal />}
-      {/* {!!Object.keys(metadata).length && <Controls scale={scale} setScale={setScale} />} */}
-      <CanvasContainer>
-        <CanvasComponent ref={canvasRef} />
-        {isImageReady && <ImageInfo metadata={metadata} />}
-      </CanvasContainer>
+      <ViewPort>
+        <CanvasContainer
+          onPointerDown={handlePointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          ref={containerRef}
+        >
+          <CanvasComponent ref={canvasRef} onMouseDown={handleMouseDown} />
+        </CanvasContainer>
+      </ViewPort>
     </>
   );
 };

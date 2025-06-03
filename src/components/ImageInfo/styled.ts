@@ -2,11 +2,12 @@ import { Typography } from 'antd';
 import styled from 'styled-components';
 
 export const StatusBar = styled('div')`
-margin-top:12px;
-  padding: 12px 24px;
-  background: #f0f2f5;
-  border-top: 1px solid #e8e8e8;
-  text-align: left;
+  padding: 8px 12px;
+  background: wheat;
+  border-radius: 4px;
+  color: white;
+  font-size: 14px;
+  z-index: 1;
 `;
 
 export const { Text } = Typography;

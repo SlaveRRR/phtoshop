@@ -1,10 +1,21 @@
-import { InterpolationMethod, interpolationDescriptions } from '@utils';
+import { useApp } from '@hooks';
+import { InterpolationMethod } from '@utils';
 import { Checkbox, Form, InputNumber, Select, Space, Typography } from 'antd';
-import { FC, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
+import { interpolationDescriptions } from './constants';
 import { Modal } from './styled';
-import { FormValues, ResizeModalProps } from './types';
+import { FormValues } from './types';
 
-export const ResizeModal: FC<ResizeModalProps> = ({ isOpen, onClose, originalWidth, originalHeight, onResize }) => {
+export const ResizeModal = () => {
+  const {
+    isOpenModal,
+    handleResize,
+    closeModal,
+    metadata: {
+      imageData: { height: originalHeight, width: originalWidth },
+    },
+  } = useApp();
+
   const [form] = Form.useForm<FormValues>();
   const aspectRatio = originalWidth / originalHeight;
 
@@ -41,12 +52,12 @@ export const ResizeModal: FC<ResizeModalProps> = ({ isOpen, onClose, originalWid
       finalHeight = Math.round((originalHeight * values.height) / 100);
     }
 
-    onResize({
+    handleResize({
       width: finalWidth,
       height: finalHeight,
       method: values.method,
     });
-    onClose();
+    closeModal();
   };
 
   const getImageSize = () => {
@@ -73,7 +84,7 @@ export const ResizeModal: FC<ResizeModalProps> = ({ isOpen, onClose, originalWid
   const originalMegapixels = ((originalWidth * originalHeight) / 1000000).toFixed(2);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpenModal) {
       form.setFieldsValue({
         width: originalWidth,
         height: originalHeight,
@@ -82,7 +93,7 @@ export const ResizeModal: FC<ResizeModalProps> = ({ isOpen, onClose, originalWid
         method: 'bilinear',
       });
     }
-  }, [isOpen, originalWidth, originalHeight, form]);
+  }, [isOpenModal, originalWidth, originalHeight, form]);
 
   const currentUnit = Form.useWatch('unit', form);
   const maxValue = currentUnit === 'percent' ? 300 : 10000;
@@ -91,8 +102,8 @@ export const ResizeModal: FC<ResizeModalProps> = ({ isOpen, onClose, originalWid
   return (
     <Modal
       title="Изменить размер изображения"
-      open={isOpen}
-      onCancel={onClose}
+      open={isOpenModal}
+      onCancel={closeModal}
       onOk={form.submit}
       okText="Применить"
       cancelText="Отмена"

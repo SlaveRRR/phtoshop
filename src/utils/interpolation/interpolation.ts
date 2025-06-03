@@ -1,107 +1,114 @@
-import { RGBAColor } from './types';
+import { PixelArray } from './types';
 
-export function getPixelColor(imageData: ImageData, x: number, y: number): RGBAColor {
-  const index = (y * imageData.width + x) * 4;
-  return {
-    r: imageData.data[index],
-    g: imageData.data[index + 1],
-    b: imageData.data[index + 2],
-    a: imageData.data[index + 3],
-  };
+function hashPixelData(data: Uint8ClampedArray): string {
+  let hash = 0;
+  const len = Math.min(data.length, 1000);
+  for (let i = 0; i < len; i++) {
+    hash = (hash * 31 + data[i]) | 0;
+  }
+  return hash.toString();
 }
 
-export function setPixelColor(imageData: ImageData, x: number, y: number, color: RGBAColor): void {
-  const index = (y * imageData.width + x) * 4;
-  imageData.data[index] = color.r;
-  imageData.data[index + 1] = color.g;
-  imageData.data[index + 2] = color.b;
-  imageData.data[index + 3] = color.a;
-}
-
-export function nearestNeighborInterpolation(
-  sourceData: ImageData,
+export const nearestNeighborInterpolation = async (
+  pixelArray: PixelArray,
   targetWidth: number,
   targetHeight: number,
-): ImageData {
-  const canvas = document.createElement('canvas');
-  canvas.width = targetWidth;
-  canvas.height = targetHeight;
-  const ctx = canvas.getContext('2d')!;
-  const targetData = ctx.createImageData(targetWidth, targetHeight);
+): Promise<PixelArray> => {
+  const { data: imageData, width, height } = pixelArray;
 
-  const scaleX = sourceData.width / targetWidth;
-  const scaleY = sourceData.height / targetHeight;
+  if (!imageData) {
+    throw new Error('Невозможно выполнить интерполяцию: отсутствуют данные изображения');
+  }
+
+  const newImageData = new Uint8ClampedArray(targetWidth * targetHeight * 4);
+  const scaleX = width / targetWidth;
+  const scaleY = height / targetHeight;
 
   for (let y = 0; y < targetHeight; y++) {
     for (let x = 0; x < targetWidth; x++) {
-      const srcX = Math.min(Math.floor(x * scaleX), sourceData.width - 1);
-      const srcY = Math.min(Math.floor(y * scaleY), sourceData.height - 1);
-      const color = getPixelColor(sourceData, srcX, srcY);
-      setPixelColor(targetData, x, y, color);
+      const srcX = Math.floor(x * scaleX);
+      const srcY = Math.floor(y * scaleY);
+
+      const srcIndex = (srcY * width + srcX) * 4;
+      const destIndex = (y * targetWidth + x) * 4;
+
+      newImageData[destIndex] = imageData[srcIndex];
+      newImageData[destIndex + 1] = imageData[srcIndex + 1];
+      newImageData[destIndex + 2] = imageData[srcIndex + 2];
+      newImageData[destIndex + 3] = imageData[srcIndex + 3];
     }
   }
 
-  return targetData;
-}
+  return {
+    data: newImageData,
+    width: targetWidth,
+    height: targetHeight,
+  };
+};
 
-export function bilinearInterpolation(sourceData: ImageData, targetWidth: number, targetHeight: number): ImageData {
-  const canvas = document.createElement('canvas');
-  canvas.width = targetWidth;
-  canvas.height = targetHeight;
-  const ctx = canvas.getContext('2d')!;
-  const targetData = ctx.createImageData(targetWidth, targetHeight);
+const bilinearCache = new Map<string, Promise<PixelArray>>();
 
-  const scaleX = sourceData.width / targetWidth;
-  const scaleY = sourceData.height / targetHeight;
+export const bilinearInterpolation = (
+  pixelArray: PixelArray,
+  targetWidth: number,
+  targetHeight: number,
+): Promise<PixelArray> => {
+  const { data: imageData, width, height } = pixelArray;
 
-  for (let y = 0; y < targetHeight; y++) {
-    for (let x = 0; x < targetWidth; x++) {
-      const srcX = x * scaleX;
-      const srcY = y * scaleY;
-
-      const x1 = Math.floor(srcX);
-      const y1 = Math.floor(srcY);
-      const x2 = Math.min(x1 + 1, sourceData.width - 1);
-      const y2 = Math.min(y1 + 1, sourceData.height - 1);
-
-      const xWeight = srcX - x1;
-      const yWeight = srcY - y1;
-
-      const topLeft = getPixelColor(sourceData, x1, y1);
-      const topRight = getPixelColor(sourceData, x2, y1);
-      const bottomLeft = getPixelColor(sourceData, x1, y2);
-      const bottomRight = getPixelColor(sourceData, x2, y2);
-
-      const color: RGBAColor = {
-        r: Math.round(bilinearValue(topLeft.r, topRight.r, bottomLeft.r, bottomRight.r, xWeight, yWeight)),
-        g: Math.round(bilinearValue(topLeft.g, topRight.g, bottomLeft.g, bottomRight.g, xWeight, yWeight)),
-        b: Math.round(bilinearValue(topLeft.b, topRight.b, bottomLeft.b, bottomRight.b, xWeight, yWeight)),
-        a: Math.round(bilinearValue(topLeft.a, topRight.a, bottomLeft.a, bottomRight.a, xWeight, yWeight)),
-      };
-
-      setPixelColor(targetData, x, y, color);
-    }
+  if (!imageData) {
+    throw new Error('Невозможно выполнить интерполяцию: отсутствуют данные изображения');
   }
 
-  return targetData;
-}
+  const cacheKey = JSON.stringify({
+    width,
+    height,
+    targetWidth,
+    targetHeight,
+    hash: hashPixelData(imageData),
+  });
 
-function bilinearValue(
-  topLeft: number,
-  topRight: number,
-  bottomLeft: number,
-  bottomRight: number,
-  xWeight: number,
-  yWeight: number,
-): number {
-  const top = topLeft * (1 - xWeight) + topRight * xWeight;
-  const bottom = bottomLeft * (1 - xWeight) + bottomRight * xWeight;
-  return top * (1 - yWeight) + bottom * yWeight;
-}
+  const promise = (async () => {
+    const newImageData = new Uint8ClampedArray(targetWidth * targetHeight * 4);
+    const scaleX = width / targetWidth;
+    const scaleY = height / targetHeight;
 
-export const interpolationDescriptions = {
-  nearest:
-    'Метод ближайшего соседа - самый быстрый метод, но может создавать пиксельный эффект. Лучше всего подходит для изображений с четкими границами.',
-  bilinear:
-    'Билинейная интерполяция - обеспечивает более плавный результат за счет усреднения четырех ближайших пикселей. Хорошо подходит для фотографий.',
+    for (let y = 0; y < targetHeight; y++) {
+      for (let x = 0; x < targetWidth; x++) {
+        const srcX = x * scaleX;
+        const srcY = y * scaleY;
+
+        const x1 = Math.floor(srcX);
+        const y1 = Math.floor(srcY);
+        const x2 = Math.min(x1 + 1, width - 1);
+        const y2 = Math.min(y1 + 1, height - 1);
+
+        const a = srcX - x1;
+        const b = srcY - y1;
+
+        const weight1 = (1 - a) * (1 - b);
+        const weight2 = a * (1 - b);
+        const weight3 = (1 - a) * b;
+        const weight4 = a * b;
+
+        for (let c = 0; c < 4; c++) {
+          const p1 = imageData[(y1 * width + x1) * 4 + c];
+          const p2 = imageData[(y1 * width + x2) * 4 + c];
+          const p3 = imageData[(y2 * width + x1) * 4 + c];
+          const p4 = imageData[(y2 * width + x2) * 4 + c];
+
+          newImageData[(y * targetWidth + x) * 4 + c] = p1 * weight1 + p2 * weight2 + p3 * weight3 + p4 * weight4;
+        }
+      }
+    }
+
+    return {
+      data: newImageData,
+      width: targetWidth,
+      height: targetHeight,
+    };
+  })();
+
+  bilinearCache.set(cacheKey, promise);
+
+  return promise;
 };

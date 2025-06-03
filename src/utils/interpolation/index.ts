@@ -1,9 +1,3 @@
-export {
-  bilinearInterpolation,
-  getPixelColor,
-  interpolationDescriptions,
-  nearestNeighborInterpolation,
-  setPixelColor,
-} from './interpolation';
+export { bilinearInterpolation, nearestNeighborInterpolation } from './interpolation';
 
-export { type InterpolationMethod } from './types';
+export { type InterpolationMethod, type PixelArray } from './types';

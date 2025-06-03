@@ -1,5 +1,5 @@
 import { InterpolationMethod } from '@utils';
-import { ResizeParams, Unit } from '../types';
+import { ResizeParams, Unit } from '../ImageEditor/types';
 
 export interface ResizeModalProps {
   isOpen: boolean;

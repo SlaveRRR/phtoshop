@@ -1,0 +1,1 @@
+export { hasAlphaChannel } from './hasAlphaChannel';

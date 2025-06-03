@@ -1,8 +1,7 @@
 export type InterpolationMethod = 'nearest' | 'bilinear';
 
-export interface RGBAColor {
-  r: number;
-  g: number;
-  b: number;
-  a: number;
+export interface PixelArray {
+  data: Uint8ClampedArray;
+  width: number;
+  height: number;
 }

@@ -11,6 +11,7 @@ export const StyledHeader = styled(Header)`
   justify-content: space-between;
   padding: 16px;
   background-color: #001529;
+  margin-bottom: 20px;
 `;
 
 export const Controls = styled.div`

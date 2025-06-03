@@ -1,10 +1,10 @@
 import styled from 'styled-components';
-import { CanvasComponentStyledProps } from './types';
 
 export const CanvasContainer = styled('div')`
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  gap: 10px;
+  align-items: start;
   min-height: 300px;
   border: 1px dashed #d9d9d9;
   border-radius: 2px;
@@ -12,9 +12,9 @@ export const CanvasContainer = styled('div')`
   overflow: auto;
 `;
 
-export const CanvasComponent = styled('canvas')<CanvasComponentStyledProps>`
-  max-width: 100%;
+export const CanvasComponent = styled('canvas')`
+  width: calc(100vw - 100px);
+  height: calc(100vh - 100px);
   background-color: #fff;
-  transform: scale(${(props) => props.scale});
   transform-origin: top left;
 `;

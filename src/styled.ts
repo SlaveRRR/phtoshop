@@ -5,8 +5,6 @@ const { Header, Content } = Layout;
 export const { Title } = Typography;
 
 export const StyledLayout = styled(Layout)`
-  min-height: 100vh;
-  width: 100vw;
   align-items: center;
 `;
 

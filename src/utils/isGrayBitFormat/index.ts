@@ -1,1 +1,0 @@
-export { isGrayBitFormat } from './isGrayBitFormat';

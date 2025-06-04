@@ -11,6 +11,7 @@ export const App: FC = () => {
         <Header />
         <Canvas />
         <Info />
+        {/* <Layers /> */}
       </StyledLayout>
     </AppProvider>
   );

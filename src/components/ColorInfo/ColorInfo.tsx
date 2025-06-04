@@ -83,7 +83,7 @@ export const ColorInfo: FC<ColorInfoProps> = ({ pipetteColors }) => {
                           <ColorLabel>{info.name}:</ColorLabel>
                           <ColorValue>
                             {Object.entries(color2[space as keyof Color])
-                              .map(([key, value]) => `${key}: ${value.toFixed(2)}`)
+                              .map(([key, value]) => `${key}: ${value?.toFixed(2)}`)
                               .join(', ')}
                           </ColorValue>
                         </div>

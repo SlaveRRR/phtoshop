@@ -39,7 +39,7 @@ export const Header = () => {
                 onClick={() => handleToolChange('hand')}
               />
             </Tooltip>
-            <Tooltip title="Пипетка (E)" placement="right">
+            <Tooltip title="Пипетка (P)" placement="right">
               <Button
                 type={activeTool === 'pippete' ? 'primary' : 'default'}
                 icon={<LuPipette />}

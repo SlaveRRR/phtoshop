@@ -10,27 +10,30 @@ export const computeRenderParams = (
       ? Math.min(containerWidth / (imgWidth + 100), containerHeight / (imgHeight + 100), 3)
       : scalePercent / 100;
 
+  const dstWidth = Math.round(imgWidth * scaleF);
+  const dstHeight = Math.round(imgHeight * scaleF);
+
+  const offsetX = (containerWidth - dstWidth) / 2;
+  const offsetY = (containerHeight - dstHeight) / 2;
+
   return {
     scaleF,
-    dstWidth: Math.round(imgWidth * scaleF),
-    dstHeight: Math.round(imgHeight * scaleF),
-    offsetX: (containerWidth - Math.round(imgWidth * scaleF)) / 2,
-    offsetY: (containerHeight - Math.round(imgHeight * scaleF)) / 2,
+    dstWidth,
+    dstHeight,
+    offsetX,
+    offsetY,
   };
 };
-
 export const drawImage = (
   ctx: CanvasRenderingContext2D,
   imageData: ImageData,
   offsetX: number,
   offsetY: number,
   opacity: number = 1,
-  //   blendMode: string = 'normal',
   scaleF: number = 1,
 ) => {
   ctx.save();
   ctx.globalAlpha = opacity;
-  //   ctx.globalCompositeOperation = blendMode as GlobalCompositeOperation;
 
   const tempCanvas = document.createElement('canvas');
   tempCanvas.width = imageData.width;

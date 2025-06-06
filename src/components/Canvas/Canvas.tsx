@@ -14,42 +14,56 @@ export const Canvas = () => {
   const isImageReady = !!Object.keys(metadata).length;
 
   const offsetRef = useRef({ x: 0, y: 0 });
+  const centerPointRef = useRef({ x: 0, y: 0 });
 
   const { containerRef, onPointerDown, onPointerMove, onPointerUp } = useDraggable();
 
   const updateCanvas = useCallback(async () => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !imageData) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    const canvasSize = { width: canvasRef.current?.width, height: canvasRef.current?.height };
-    if (!canvas || !ctx || !canvasSize) return;
+    if (!ctx) return;
 
-    const containerWidth = window.innerWidth;
-    const containerHeight = window.innerHeight;
+    const containerWidth = window.innerWidth - 100;
+    const containerHeight = window.innerHeight - 100;
 
-    if (canvas.width !== containerWidth || canvas.height !== containerHeight) {
-      canvas.width = containerWidth;
-      canvas.height = containerHeight;
-    }
-
-    ctx.clearRect(0, 0, containerWidth, containerHeight);
-
-    const { scaleF, offsetX, offsetY } = computeRenderParams(
-      canvasSize.width,
-      canvasSize.height,
+    const { scaleF, dstWidth, dstHeight, offsetX, offsetY } = computeRenderParams(
+      imageData.width,
+      imageData.height,
       containerWidth,
       containerHeight,
-      autoScaled ? scale : null,
+      autoScaled ? null : scale,
     );
 
-    setScale(Math.floor(scaleF * 100));
-    setAutoScaled(true);
+    canvas.width = Math.max(containerWidth, dstWidth);
+    canvas.height = Math.max(containerHeight, dstHeight);
 
-    if (offsetRef.current.x === 0 && offsetRef.current.y === 0) {
-      offsetRef.current = { x: offsetX, y: offsetY };
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    setScale(Math.round(scaleF * 100));
+    if (autoScaled) setAutoScaled(false);
+
+    let newOffsetX = offsetX;
+    let newOffsetY = offsetY;
+
+    if (centerPointRef.current.x !== 0 || centerPointRef.current.y !== 0) {
+      const prevScale = scale / 100;
+      const newScale = scaleF;
+      const scaleRatio = newScale / prevScale;
+
+      newOffsetX = centerPointRef.current.x - (centerPointRef.current.x - offsetRef.current.x) * scaleRatio;
+      newOffsetY = centerPointRef.current.y - (centerPointRef.current.y - offsetRef.current.y) * scaleRatio;
+    } else {
+      centerPointRef.current = {
+        x: containerWidth / 2,
+        y: containerHeight / 2,
+      };
+      newOffsetX = offsetX;
+      newOffsetY = offsetY;
     }
-    if (!imageData) return;
+
+    offsetRef.current = { x: newOffsetX, y: newOffsetY };
 
     const newData = new Uint8ClampedArray(imageData.data.length);
     for (let i = 0; i < imageData.data.length; i += 4) {
@@ -60,15 +74,7 @@ export const Canvas = () => {
     }
     const renderImageData = new ImageData(newData, imageData.width, imageData.height);
 
-    drawImage(
-      ctx,
-      renderImageData,
-      offsetRef.current.x,
-      offsetRef.current.y,
-      1,
-      // canvasBlendMode,
-      scale / 100,
-    );
+    drawImage(ctx, renderImageData, offsetRef.current.x, offsetRef.current.y, 1, scaleF);
   }, [autoScaled, scale, setScale, setAutoScaled, imageData]);
 
   const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
@@ -79,7 +85,7 @@ export const Canvas = () => {
 
   const handleMouseDown = (e: MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !imageData) return;
 
     e.stopPropagation();
     const { clientX, clientY } = e;
@@ -91,12 +97,11 @@ export const Canvas = () => {
       { width: canvas.width, height: canvas.height },
       { left: rect.left, top: rect.top },
       imageData,
-      {
-        x: clientX,
-        y: clientY,
-      },
+      { x: clientX, y: clientY },
       scaleFactor,
+      offsetRef.current, // Передаем смещение
     );
+
     if (color) {
       if (e.altKey || e.ctrlKey || e.shiftKey) {
         setPipetteColors((prevState) => ({

@@ -3,6 +3,7 @@ import { AppProvider } from '@hooks';
 import { FC } from 'react';
 
 import { StyledLayout } from './styled';
+import { GlobalStyles } from './styles';
 
 export const App: FC = () => {
   return (
@@ -13,6 +14,7 @@ export const App: FC = () => {
         <Info />
         {/* <Layers /> */}
       </StyledLayout>
+      <GlobalStyles />
     </AppProvider>
   );
 };

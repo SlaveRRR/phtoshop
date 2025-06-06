@@ -74,19 +74,30 @@ export function getColorFromPoint(
   imageData: ImageData,
   point: Point,
   scale: number,
+  offset: { x: number; y: number }, // Добавляем смещение
 ): Color | null {
-  const { height, width } = canvasSize;
   const { left, top } = position;
-  const scaledX = Math.round(point.x / scale);
-  const scaledY = Math.round(point.y / scale);
+  const { x: mouseX, y: mouseY } = point;
 
-  const sampleX = Math.floor((point.x - left) / scaledX);
-  const sampleY = Math.floor((point.y - top) / scaledY);
+  // Вычисляем координаты относительно изображения
+  const imageX = Math.round((mouseX - left - offset.x) / scale);
+  const imageY = Math.round((mouseY - top - offset.y) / scale);
+
+  // Проверяем границы изображения
+  if (imageX < 0 || imageX >= imageData.width || imageY < 0 || imageY >= imageData.height) {
+    return null;
+  }
 
   try {
-    const pixel = imageData.data.slice((sampleY * width + sampleX) * 4, (sampleY * height + sampleX) * 4 + 4);
+    // Вычисляем индекс пикселя в imageData.data
+    const index = (imageY * imageData.width + imageX) * 4;
 
-    const rgb = { r: pixel[0], g: pixel[1], b: pixel[2] };
+    // Получаем RGB значения
+    const r = imageData.data[index];
+    const g = imageData.data[index + 1];
+    const b = imageData.data[index + 2];
+
+    const rgb = { r, g, b };
     const xyz = rgbToXyz(rgb.r, rgb.g, rgb.b);
     const lab = xyzToLab(xyz.x, xyz.y, xyz.z);
     const oklch = labToOklch(lab.l, lab.a, lab.b);
@@ -96,7 +107,7 @@ export function getColorFromPoint(
       xyz,
       lab,
       oklch,
-      position: { x: scaledX, y: scaledY },
+      position: { x: imageX, y: imageY },
     };
   } catch {
     return null;

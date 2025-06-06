@@ -1,5 +1,5 @@
 import { type UploadProps, message } from 'antd';
-import { FC, PropsWithChildren, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { FC, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ImageMetadata } from '@types';
 import { bilinearInterpolation, decoderGB7, getFileType, hasAlphaChannel, nearestNeighborInterpolation } from '@utils';
@@ -15,7 +15,7 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const [metadata, setMetadata] = useState<ImageMetadata>({} as ImageMetadata);
 
-  const [autoScaled, setAutoScaled] = useState(false);
+  const [autoScaled, setAutoScaled] = useState(true);
 
   const [scale, setScale] = useState(100);
 
@@ -70,6 +70,7 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
             format: 'gb7',
             imageData: imageData,
           }));
+
           break;
 
         case 'jpg':
@@ -122,6 +123,7 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
   }, []);
 
   const onScaleChange = useCallback((value: number) => {
+    console.log(value);
     setScale(value);
   }, []);
 
@@ -150,6 +152,11 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
       imageData: newImageData,
     }));
   };
+
+  useEffect(() => {
+    setAutoScaled(true);
+    setScale(100);
+  }, []);
 
   const providerValue = useMemo(
     () => ({

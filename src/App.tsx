@@ -1,4 +1,4 @@
-import { Canvas, Header, Info } from '@components';
+import { Canvas, Header, Info, LayersPanel } from '@components';
 import { AppProvider } from '@hooks';
 import { FC } from 'react';
 
@@ -12,7 +12,7 @@ export const App: FC = () => {
         <Header />
         <Canvas />
         <Info />
-        {/* <Layers /> */}
+        <LayersPanel />
       </StyledLayout>
       <GlobalStyles />
     </AppProvider>

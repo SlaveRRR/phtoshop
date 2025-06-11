@@ -3,7 +3,6 @@ import { Tool } from '@hooks/useTools';
 import { Button, Select, Space, Tooltip } from 'antd';
 import { FaHandPaper } from 'react-icons/fa';
 import { LuPipette } from 'react-icons/lu';
-import { Uploader } from './components';
 import { scaleOptions } from './constants';
 import { Controls, StyledHeader, Title, ToolsPanel } from './styled';
 
@@ -27,7 +26,6 @@ export const Header = () => {
         <Title level={3} style={{ color: 'white', margin: 0 }}>
           Imagix
         </Title>
-        <Uploader />
       </Space>
       {imageData && (
         <Space size={20}>

@@ -30,10 +30,12 @@ export const drawImage = (
   offsetX: number,
   offsetY: number,
   opacity: number = 1,
+  blendMode: string = 'normal',
   scaleF: number = 1,
 ) => {
   ctx.save();
   ctx.globalAlpha = opacity;
+  ctx.globalCompositeOperation = blendMode as GlobalCompositeOperation;
 
   const tempCanvas = document.createElement('canvas');
   tempCanvas.width = imageData.width;

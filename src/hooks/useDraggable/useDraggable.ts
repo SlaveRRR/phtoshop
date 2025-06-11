@@ -19,7 +19,7 @@ const calculateBoundedPosition = (containerRef: RefObject<HTMLDivElement | null>
 
 const MOVE_STEP = 20;
 
-export const useDraggable = () => {
+export const useDraggable = (activeLayerId?: string, updateLayerOffset?: () => void) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [state, setState] = useState({
@@ -89,6 +89,8 @@ export const useDraggable = () => {
     const newY = pageY - offset.y;
 
     const boundedPos = calculateBoundedPosition(containerRef, newX, newY);
+
+    updateLayerOffset?.(activeLayerId, boundedPos.x, boundedPos.y);
 
     applyCanvasStyles(boundedPos.x, boundedPos.y);
 

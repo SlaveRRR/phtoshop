@@ -23,6 +23,18 @@ export interface AppContext {
   setActiveTool: Dispatch<SetStateAction<Tool>>;
   setPipetteColors: Dispatch<SetStateAction<PipetteColors>>;
   pipetteColors: PipetteColors;
+  layers: Layer[];
+  setLayers: Dispatch<SetStateAction<Layer[]>>;
+  activeLayerId: string;
+  setActiveLayerId: Dispatch<SetStateAction<string>>;
+  addLayer: (type: 'image' | 'color', data?: ImageData, color?: string) => void;
+  moveLayer: (fromIndex: number, toIndex: number) => void;
+  toggleLayerVisibility: (id: string) => void;
+  deleteLayer: (id: string) => void;
+  updateLayerOpacity: (id: string, value: number) => void;
+  updateLayerBlendMode: (id: string, value: Layer['blendMode']) => void;
+  toggleAlphaChannelVisibility: (id: string) => void;
+  deleteAlphaChannel: (id: string) => void;
 }
 
 export interface PipetteColors {
@@ -39,4 +51,25 @@ export interface ResizeParams {
 export interface Point {
   x: number;
   y: number;
+}
+
+export interface Layer {
+  id: string;
+  name: string;
+  visible: boolean;
+  opacity: number;
+  blendMode: 'normal' | 'multiply' | 'screen' | 'overlay';
+  imageData?: ImageData;
+  color?: string;
+  offsetX: number;
+  offsetY: number;
+  hasAlpha: boolean;
+  alphaVisible: boolean;
+}
+
+export interface AlphaChannel {
+  id: string;
+  name: string;
+  visible: boolean;
+  data: Uint8ClampedArray;
 }

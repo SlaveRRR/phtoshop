@@ -1,5 +1,5 @@
-import { ImageMetadata } from '@types';
+import { Layer } from '@hooks/useApp/types';
 
 export interface ImageInfoProps {
-  metadata: ImageMetadata;
+  layer: Layer;
 }

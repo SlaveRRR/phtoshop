@@ -9,6 +9,8 @@ export const useTools = () => {
         setActiveTool('hand');
       } else if (e.key === 'p') {
         setActiveTool('pippete');
+      } else if (e.key === 'c') {
+        setActiveTool('curvey');
       }
     };
 

@@ -7,14 +7,16 @@ import { Modal } from './styled';
 import { FormValues } from './types';
 
 export const ResizeModal = () => {
+  const { isOpenModal, handleResize, closeModal, layers, activeLayerId } = useApp();
+
+  const activeLayer = layers[layers.findIndex((layer) => layer.id === activeLayerId)] ?? {
+    imageData: { height: 0, width: 0 },
+  };
+  console.log(activeLayer);
+
   const {
-    isOpenModal,
-    handleResize,
-    closeModal,
-    metadata: {
-      imageData: { height: originalHeight, width: originalWidth },
-    },
-  } = useApp();
+    imageData: { height: originalHeight, width: originalWidth },
+  } = activeLayer;
 
   const [form] = Form.useForm<FormValues>();
   const aspectRatio = originalWidth / originalHeight;

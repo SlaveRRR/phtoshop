@@ -1,83 +1,11 @@
 import { ResizeModal } from '@components/ResizeModal';
 import { useApp, useDraggable } from '@hooks';
 import { computeRenderParams, drawImage, getColorFromPoint } from '@utils';
-import { Button, Select } from 'antd';
 import { MouseEvent, PointerEvent, useCallback, useEffect, useRef } from 'react';
-import styled from 'styled-components';
 import { CanvasComponent, CanvasContainer, ViewPort } from './styled';
-
-const { Option } = Select;
-
-// Описания режимов наложения для тултипов
-const blendModeTooltips: Record<string, string> = {
-  normal: 'Обычный: отображает пиксели верхнего слоя без смешивания.',
-  multiply: 'Умножение: умножает цвета верхнего и нижнего слоев, создавая более темный цвет.',
-  screen: 'Экран: инвертирует цвета обоих слоев, умножает их и инвертирует результат, создавая более светлый цвет.',
-  overlay: 'Наложение: комбинирует умножение и экран, затемняя темные области и осветляя светлые.',
-};
-
-// Стили с использованием styled-components
-const LayersPanel = styled.div`
-  width: 260px;
-  padding: 16px;
-  background-color: #f5f5f5;
-  height: 100vh;
-  overflow-y: auto;
-  border-left: 1px solid #d9d9d9;
-`;
-
-const SectionTitle = styled.h2`
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 16px;
-`;
-
-const LayerItem = styled.div<{ isActive: boolean }>`
-  padding: 8px;
-  margin-bottom: 8px;
-  background-color: ${(props) => (props.isActive ? '#e6f7ff' : '#ffffff')};
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-`;
-
-const LayerControls = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-`;
-
-const LayerName = styled.span`
-  flex: 1;
-  margin-left: 8px;
-  font-size: 14px;
-`;
-
-const PreviewImage = styled.img`
-  width: 48px;
-  height: 48px;
-  border: 1px solid #d9d9d9;
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-`;
-
-const UploadButton = styled(Button)`
-  width: 100%;
-  margin-bottom: 8px;
-`;
-
-const ColorPickerContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
 
 export const Canvas = () => {
   const {
-    metadata,
     canvasRef,
     scale,
     autoScaled,
@@ -94,7 +22,7 @@ export const Canvas = () => {
 
   const { imageData } = activeLayer;
 
-  const isImageReady = !!Object.keys(metadata).length;
+  const isImageReady = !!Object.keys(activeLayer).length;
 
   const offsetRef = useRef({ x: 0, y: 0 });
   const centerPointRef = useRef({ x: 0, y: 0 });

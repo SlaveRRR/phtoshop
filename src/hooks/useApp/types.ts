@@ -1,6 +1,5 @@
 import { Color } from '@components/ColorInfo/types';
 import { Tool } from '@hooks/useTools';
-import { ImageMetadata } from '@types';
 import { InterpolationMethod } from '@utils';
 import { UploadProps } from 'antd';
 import { Dispatch, RefObject, SetStateAction } from 'react';
@@ -8,8 +7,6 @@ import { Dispatch, RefObject, SetStateAction } from 'react';
 export interface AppContext {
   onFileSelect: UploadProps['customRequest'];
   onScaleChange: (value: number) => void;
-  metadata: ImageMetadata;
-  setMetadata: Dispatch<SetStateAction<ImageMetadata>>;
   canvasRef: RefObject<HTMLCanvasElement | null>;
   scale: number;
   setScale: Dispatch<SetStateAction<number>>;
@@ -35,6 +32,7 @@ export interface AppContext {
   updateLayerBlendMode: (id: string, value: Layer['blendMode']) => void;
   toggleAlphaChannelVisibility: (id: string) => void;
   deleteAlphaChannel: (id: string) => void;
+  applyCurvesCorrection: (correctedData: ImageData) => void;
 }
 
 export interface PipetteColors {
@@ -61,6 +59,8 @@ export interface Layer {
   blendMode: 'normal' | 'multiply' | 'screen' | 'overlay';
   imageData?: ImageData;
   color?: string;
+  format: string;
+  colorDepth: number;
   offsetX: number;
   offsetY: number;
   hasAlpha: boolean;

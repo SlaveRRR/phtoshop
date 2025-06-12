@@ -3,16 +3,16 @@ import { FC } from 'react';
 import { StatusBar, Text } from './styled';
 import { ImageInfoProps } from './types';
 
-export const ImageInfo: FC<ImageInfoProps> = ({ metadata }) => {
+export const ImageInfo: FC<ImageInfoProps> = ({ layer }) => {
   return (
     <StatusBar>
-      {!!Object.keys(metadata).length ? (
+      {layer && !!Object.keys(layer).length ? (
         <Space wrap>
-          <Text>Width: {metadata.width}px</Text>
-          <Text>Height: {metadata.height}px</Text>
-          <Text>Color Depth: {metadata.colorDepth}-bit</Text>
-          <Text>Format: {metadata.format}</Text>
-          {metadata.hasMask !== undefined && <Text>Mask: {metadata.hasMask ? 'Yes' : 'No'}</Text>}
+          <Text>Width: {layer?.imageData?.width}px</Text>
+          <Text>Height: {layer?.imageData?.height}px</Text>
+          <Text>Color Depth: {layer.colorDepth}-bit</Text>
+          <Text>Format: {layer.format}</Text>
+          {layer.hasAlpha !== undefined && <Text>Mask: {layer.hasAlpha ? 'Yes' : 'No'}</Text>}
         </Space>
       ) : (
         <Text>No image loaded</Text>

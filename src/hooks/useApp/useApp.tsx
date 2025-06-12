@@ -2,7 +2,6 @@ import { type UploadProps, message } from 'antd';
 import { FC, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
-import { ImageMetadata } from '@types';
 import { bilinearInterpolation, decoderGB7, getFileType, hasAlphaChannel, nearestNeighborInterpolation } from '@utils';
 
 import { useTools } from '@hooks';
@@ -13,7 +12,7 @@ const { Provider } = appContext;
 
 export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [metadata, setMetadata] = useState<ImageMetadata>({} as ImageMetadata);
+
   const [autoScaled, setAutoScaled] = useState(true);
   const [scale, setScale] = useState(100);
   const [isOpenModal, setIsOpenModal] = useState(false);
@@ -60,16 +59,10 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
 
           ctx.putImageData(imageData, 0, 0);
 
-          setMetadata((prevState) => ({
-            ...prevState,
-            width: decoded.width,
-            height: decoded.height,
-            colorDepth: colorDepth,
-            hasMask: hasAlpha,
+          addLayer('image', imageData, {
             format: 'gb7',
-            imageData: imageData,
-          }));
-          addLayer('image', imageData);
+            colorDepth: colorDepth,
+          });
 
           break;
 
@@ -89,16 +82,10 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
             const hasAlpha = fileType === 'png' && hasAlphaChannel(imageData);
             const colorDepth = fileType === 'png' ? (hasAlpha ? 32 : 24) : 24;
 
-            setMetadata((prevState) => ({
-              ...prevState,
-              width: img.naturalWidth,
-              height: img.naturalHeight,
-              colorDepth: colorDepth,
-              hasMask: hasAlpha,
+            addLayer('image', imageData, {
               format: fileType,
-              imageData: imageData,
-            }));
-            addLayer('image', imageData);
+              colorDepth: colorDepth,
+            });
 
             URL.revokeObjectURL(imgUrl);
           };
@@ -124,33 +111,36 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
   }, []);
 
   // Добавление нового слоя
-  const addLayer = useCallback((type: 'image' | 'color', data?: ImageData, color?: string) => {
-    setLayers((prevLayers) => {
-      if (prevLayers.length >= 2) {
-        message.error('Максимум 2 слоя!');
-        return prevLayers;
-      }
+  const addLayer = useCallback(
+    (type: 'image' | 'color', data: ImageData, options: Pick<Layer, 'format' | 'colorDepth' | 'color'>) => {
+      setLayers((prevLayers) => {
+        if (prevLayers.length >= 2) {
+          message.error('Максимум 2 слоя!');
+          return prevLayers;
+        }
 
-      const hasAlpha = data ? hasAlphaChannel(data) : false;
+        const hasAlpha = data ? hasAlphaChannel(data) : false;
 
-      const newLayer: Layer = {
-        id: uuidv4(),
-        name: `Слой ${prevLayers.length + 1}`,
-        visible: true,
-        opacity: 100,
-        blendMode: 'normal',
-        imageData: data,
-        color: color,
-        offsetX: 0,
-        offsetY: 0,
-        hasAlpha,
-        alphaVisible: hasAlpha,
-      };
+        const newLayer: Layer = {
+          id: uuidv4(),
+          name: `Слой ${prevLayers.length + 1}`,
+          visible: true,
+          opacity: 100,
+          blendMode: 'normal',
+          imageData: data,
+          offsetX: 0,
+          offsetY: 0,
+          hasAlpha,
+          alphaVisible: hasAlpha,
+          ...options,
+        };
 
-      setActiveLayerId(newLayer.id);
-      return [...prevLayers, newLayer];
-    });
-  }, []);
+        setActiveLayerId(newLayer.id);
+        return [...prevLayers, newLayer];
+      });
+    },
+    [],
+  );
 
   // Обновление координат слоя
   const updateLayerOffset = useCallback((id: string, offsetX: number, offsetY: number) => {
@@ -243,31 +233,46 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
     setIsOpenModal(false);
   }, []);
 
+  const applyCurvesCorrection = useCallback(
+    (correctedData: ImageData) => {
+      if (!activeLayerId) {
+        message.error('Не выбран активный слой!');
+        return;
+      }
+
+      setLayers((prevLayers) =>
+        prevLayers.map((layer) => (layer.id === activeLayerId ? { ...layer, imageData: correctedData } : layer)),
+      );
+
+      message.success('Коррекция кривых применена успешно!');
+    },
+    [activeLayerId, setLayers],
+  );
+
   const handleResize = async ({ width, height, method }: ResizeParams) => {
-    if (!metadata.imageData) return;
+    const activeLayer = layers.find((layer) => layer.id === activeLayerId);
+
+    if (!activeLayer?.imageData) {
+      message.error('Не найден активный слой с изображением!');
+      return;
+    }
 
     const resizedData =
       method === 'nearest'
-        ? await nearestNeighborInterpolation(metadata.imageData, width, height)
-        : await bilinearInterpolation(metadata.imageData, width, height);
+        ? await nearestNeighborInterpolation(activeLayer.imageData, width, height)
+        : await bilinearInterpolation(activeLayer.imageData, width, height);
 
     const newImageData = new ImageData(resizedData.data, resizedData.width, resizedData.height);
 
-    setMetadata((prevState) => ({
-      ...prevState,
-      height: newImageData.height,
-      width: newImageData.width,
-      imageData: newImageData,
-    }));
+    setLayers((prevState) =>
+      prevState.map((layer) => {
+        if (layer.id !== activeLayerId) return layer;
 
-    // Обновление imageData для всех слоев, если они используют исходное изображение
-    setLayers(
-      layers.map((layer) => ({
-        ...layer,
-        imageData: layer.imageData
-          ? new ImageData(new Uint8ClampedArray(layer.imageData.data), newImageData.width, newImageData.height)
-          : layer.imageData,
-      })),
+        return {
+          ...layer,
+          imageData: newImageData,
+        };
+      }),
     );
   };
 
@@ -278,8 +283,6 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const providerValue = useMemo(
     () => ({
-      metadata,
-      setMetadata,
       onFileSelect,
       canvasRef,
       scale,
@@ -305,7 +308,7 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
       deleteLayer,
       updateLayerOpacity,
       updateLayerBlendMode,
-
+      applyCurvesCorrection,
       toggleAlphaChannelVisibility,
       deleteAlphaChannel,
       updateLayerOffset,
@@ -317,8 +320,6 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
       closeModal,
       isOpenModal,
       handleResize,
-      metadata,
-      setMetadata,
       scale,
       setScale,
       autoScaled,
@@ -337,7 +338,7 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
       deleteLayer,
       updateLayerOpacity,
       updateLayerBlendMode,
-
+      applyCurvesCorrection,
       toggleAlphaChannelVisibility,
       deleteAlphaChannel,
       updateLayerOffset,

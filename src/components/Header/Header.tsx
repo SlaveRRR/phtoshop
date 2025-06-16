@@ -1,16 +1,28 @@
 import { CurvesModal } from '@components/CurvesModal';
+import { KernelModal } from '@components/KernelModal';
+import { SaveModal } from '@components/SaveModal/SaveModal';
 import { useApp } from '@hooks';
 import { Tool } from '@hooks/useTools';
 import { Button, Select, Space, Tooltip } from 'antd';
 import { useState } from 'react';
+import { CiFilter } from 'react-icons/ci';
 import { FaChartLine, FaHandPaper } from 'react-icons/fa';
 import { LuPipette } from 'react-icons/lu';
 import { scaleOptions } from './constants';
 import { Controls, StyledHeader, Title, ToolsPanel } from './styled';
 
 export const Header = () => {
-  const { onScaleChange, scale, openModal, activeTool, layers, activeLayerId, applyCurvesCorrection, setActiveTool } =
-    useApp();
+  const {
+    onScaleChange,
+    scale,
+    openModal,
+    activeTool,
+    layers,
+    activeLayerId,
+    applyCurvesCorrection,
+    applyKernels,
+    setActiveTool,
+  } = useApp();
 
   const activeLayer = layers[layers.findIndex((layer) => layer.id === activeLayerId)] ?? {
     imageData: null,
@@ -21,11 +33,15 @@ export const Header = () => {
 
   const [isOpenModal, setIsOpenModal] = useState(false);
 
+  const [isOpenKernels, setIsOpenKernels] = useState(false);
+
   const handleToolChange = (tool: Tool) => {
     setActiveTool(tool);
   };
 
   const closeModal = () => setIsOpenModal(false);
+
+  const closeKernel = () => setIsOpenKernels(false);
 
   return (
     <StyledHeader>
@@ -62,6 +78,16 @@ export const Header = () => {
                   }}
                 />
               </Tooltip>
+              <Tooltip title="Фильтры (F)" placement="right">
+                <Button
+                  type={activeTool === 'kernels' ? 'primary' : 'default'}
+                  icon={<CiFilter />}
+                  onClick={() => {
+                    handleToolChange('kernels');
+                    setIsOpenKernels(true);
+                  }}
+                />
+              </Tooltip>
             </ToolsPanel>
 
             <Controls>
@@ -81,6 +107,8 @@ export const Header = () => {
             imageData={imageData}
             isAlphaChannel={!!hasAlpha}
           />
+          <KernelModal visible={isOpenKernels} activeLayer={activeLayer} onClose={closeKernel} onApply={applyKernels} />
+          <SaveModal />
         </>
       )}
     </StyledHeader>

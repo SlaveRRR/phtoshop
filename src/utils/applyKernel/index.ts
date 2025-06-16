@@ -1,0 +1,1 @@
+export { applyKernel } from './applyKernel';

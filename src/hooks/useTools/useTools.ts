@@ -11,6 +11,8 @@ export const useTools = () => {
         setActiveTool('pippete');
       } else if (e.key === 'c') {
         setActiveTool('curvey');
+      } else if (e.key === 'f') {
+        setActiveTool('kernels');
       }
     };
 

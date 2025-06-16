@@ -24,7 +24,7 @@ export interface AppContext {
   setLayers: Dispatch<SetStateAction<Layer[]>>;
   activeLayerId: string;
   setActiveLayerId: Dispatch<SetStateAction<string>>;
-  addLayer: (type: 'image' | 'color', data?: ImageData, color?: string) => void;
+  addLayer: (type: 'image' | 'color', data: ImageData, options: Pick<Layer, 'format' | 'colorDepth' | 'color'>) => void;
   moveLayer: (fromIndex: number, toIndex: number) => void;
   toggleLayerVisibility: (id: string) => void;
   deleteLayer: (id: string) => void;
@@ -33,6 +33,10 @@ export interface AppContext {
   toggleAlphaChannelVisibility: (id: string) => void;
   deleteAlphaChannel: (id: string) => void;
   applyCurvesCorrection: (correctedData: ImageData) => void;
+  applyKernels: (correctedData: ImageData) => void;
+  isOpenSaveModal: boolean;
+  closeSaveModal: () => void;
+  openSaveModal: () => void;
 }
 
 export interface PipetteColors {

@@ -1,1 +1,1 @@
-export type Tool = 'hand' | 'pippete' | 'curvey';
+export type Tool = 'hand' | 'pippete' | 'curvey' | 'kernels';

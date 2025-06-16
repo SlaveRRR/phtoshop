@@ -1,7 +1,8 @@
 import { DeleteOutlined, EyeInvisibleOutlined, EyeOutlined, UploadOutlined } from '@ant-design/icons';
 import { useApp } from '@hooks';
-import { Button, Col, Row, Select, Slider, Switch, Tooltip, Upload } from 'antd';
+import { Button, Col, Row, Select, Slider, Space, Switch, Tooltip, Upload } from 'antd';
 import React, { useState } from 'react';
+import { IoMdDownload } from 'react-icons/io';
 import { blendModeTooltips } from './constants';
 import {
   ButtonGroup,
@@ -31,6 +32,7 @@ export const LayersPanel: React.FC = () => {
     toggleAlphaChannelVisibility,
     deleteAlphaChannel,
     onFileSelect,
+    openSaveModal,
   } = useApp();
 
   const [fillColor, setFillColor] = useState<string>('#ffffff');
@@ -84,17 +86,20 @@ export const LayersPanel: React.FC = () => {
             <LayerControls>
               {renderPreview(layer.imageData || layer.color)}
               <LayerName>{layer.name}</LayerName>
-              <Button
-                icon={layer.visible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                onClick={() => toggleLayerVisibility(layer.id)}
-                size="small"
-              />
-              <Button
-                icon={<DeleteOutlined />}
-                onClick={() => deleteLayer(layer.id)}
-                size="small"
-                disabled={layers.length <= 1}
-              />
+              <Space>
+                <Button
+                  icon={layer.visible ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                  onClick={() => toggleLayerVisibility(layer.id)}
+                  size="small"
+                />
+                <Button icon={<IoMdDownload />} onClick={() => openSaveModal()} size="small" />
+                <Button
+                  icon={<DeleteOutlined />}
+                  onClick={() => deleteLayer(layer.id)}
+                  size="small"
+                  disabled={layers.length <= 1}
+                />
+              </Space>
             </LayerControls>
             <div style={{ marginBottom: '8px' }}>
               <label>Прозрачность: {layer.opacity}%</label>
@@ -170,7 +175,10 @@ export const LayersPanel: React.FC = () => {
               onChange={(e) => setFillColor(e.target.value)}
               style={{ width: '32px', height: '32px' }}
             />
-            <Button onClick={() => addLayer('color', undefined, fillColor)} disabled={layers.length >= 2}>
+            <Button
+              onClick={() => addLayer('color', { height: 0, width: 0 }, { color: fillColor })}
+              disabled={layers.length >= 2}
+            >
               Добавить цветной слой
             </Button>
           </ColorPickerContainer>

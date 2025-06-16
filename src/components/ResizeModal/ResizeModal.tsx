@@ -12,7 +12,6 @@ export const ResizeModal = () => {
   const activeLayer = layers[layers.findIndex((layer) => layer.id === activeLayerId)] ?? {
     imageData: { height: 0, width: 0 },
   };
-  console.log(activeLayer);
 
   const {
     imageData: { height: originalHeight, width: originalWidth },

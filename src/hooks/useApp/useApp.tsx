@@ -16,12 +16,17 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
   const [autoScaled, setAutoScaled] = useState(true);
   const [scale, setScale] = useState(100);
   const [isOpenModal, setIsOpenModal] = useState(false);
+  const [isOpenSaveModal, setIsOpenSaveModal] = useState(false);
   const [pipetteColors, setPipetteColors] = useState<PipetteColors>({} as PipetteColors);
   const { activeTool, setActiveTool } = useTools();
 
   // Состояние для слоев и альфа-каналов
   const [layers, setLayers] = useState<Layer[]>([]);
   const [activeLayerId, setActiveLayerId] = useState<string>('');
+
+  const closeSaveModal = () => setIsOpenSaveModal(false);
+
+  const openSaveModal = () => setIsOpenSaveModal(true);
 
   // Обработчик загрузки изображения для нового слоя
   const onFileSelect: UploadProps['customRequest'] = useCallback(({ file }) => {
@@ -110,6 +115,20 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
     reader.readAsArrayBuffer(file);
   }, []);
 
+  const createColorImageData = (width: number, height: number, color: string): ImageData => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Failed to get canvas context');
+
+    canvas.width = width;
+    canvas.height = height;
+
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, width, height);
+
+    return ctx.getImageData(0, 0, width, height);
+  };
+
   // Добавление нового слоя
   const addLayer = useCallback(
     (type: 'image' | 'color', data: ImageData, options: Pick<Layer, 'format' | 'colorDepth' | 'color'>) => {
@@ -119,7 +138,9 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
           return prevLayers;
         }
 
-        const hasAlpha = data ? hasAlphaChannel(data) : false;
+        const hasAlpha = data && type !== 'color' ? hasAlphaChannel(data) : false;
+
+        const imageData = type === 'image' ? data : createColorImageData(200, 200, options?.color);
 
         const newLayer: Layer = {
           id: uuidv4(),
@@ -127,7 +148,7 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
           visible: true,
           opacity: 100,
           blendMode: 'normal',
-          imageData: data,
+          imageData,
           offsetX: 0,
           offsetY: 0,
           hasAlpha,
@@ -207,8 +228,6 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
     );
   }, []);
 
-  console.log(layers);
-
   // Удаление альфа-канала
   const deleteAlphaChannel = useCallback((id: string) => {
     setLayers((prevState) =>
@@ -245,6 +264,22 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
       );
 
       message.success('Коррекция кривых применена успешно!');
+    },
+    [activeLayerId, setLayers],
+  );
+
+  const applyKernels = useCallback(
+    (correctedData: ImageData) => {
+      if (!activeLayerId) {
+        message.error('Не выбран активный слой!');
+        return;
+      }
+
+      setLayers((prevLayers) =>
+        prevLayers.map((layer) => (layer.id === activeLayerId ? { ...layer, imageData: correctedData } : layer)),
+      );
+
+      message.success('Фильтр успешно применён!');
     },
     [activeLayerId, setLayers],
   );
@@ -309,9 +344,13 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
       updateLayerOpacity,
       updateLayerBlendMode,
       applyCurvesCorrection,
+      applyKernels,
       toggleAlphaChannelVisibility,
       deleteAlphaChannel,
       updateLayerOffset,
+      closeSaveModal,
+      openSaveModal,
+      isOpenSaveModal,
     }),
     [
       onFileSelect,
@@ -342,6 +381,10 @@ export const AppProvider: FC<PropsWithChildren> = ({ children }) => {
       toggleAlphaChannelVisibility,
       deleteAlphaChannel,
       updateLayerOffset,
+      applyKernels,
+      closeSaveModal,
+      openSaveModal,
+      isOpenSaveModal,
     ],
   );
 
